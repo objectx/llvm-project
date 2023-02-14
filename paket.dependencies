@@ -1,0 +1,12 @@
+source https://api.nuget.org/v3/index.json
+storage: none
+framework: net7.0
+generate_load_scripts: true
+
+nuget FSharp.Core
+nuget System.Reactive   // Prevent "Could not load file or assembly ..." error when using adapter
+nuget Fake.Core.Target
+nuget Fake.IO.FileSystem
+nuget Fake.DotNet.MSBuild
+nuget BlackFox.CommandLine
+nuget BlackFox.Fake.BuildTask
