@@ -1,0 +1,5 @@
+
+System.Reactive
+Fake.Core.Target
+Fake.IO.FileSystem
+BlackFox.CommandLine
