@@ -1,7 +1,6 @@
 source https://api.nuget.org/v3/index.json
 storage: none
-framework: net7.0
-generate_load_scripts: true
+framework: net8.0
 
 nuget FSharp.Core
 nuget System.Reactive   // Prevent "Could not load file or assembly ..." error when using adapter
