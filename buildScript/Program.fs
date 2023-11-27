@@ -155,6 +155,7 @@ module Tasks =
                    "LLVM_COMPILER_JOBS=18"
                    "LLVM_ENABLE_EH=YES"
                    "LLVM_ENABLE_RTTI=YES"
+                   "LLVM_BUILD_LLVM_C_DYLIB=NO"
                    $"CMAKE_MT={mtBin}"
                    $"CMAKE_GENERATOR_INSTANCE={vsInstallDir}" |]
             |> injectLibXml2
@@ -446,7 +447,6 @@ module Tasks =
 
             CmdLine.empty
             |> CmdLine.append "merge"
-            |> CmdLine.append "--compbinary"
             |> CmdLine.append "--enable-name-compression"
             |> CmdLine.appendf "--input-files=%s" sampleList
             |> CmdLine.appendf "--output=%s" (buildRoot </> "llvm.profdata")
