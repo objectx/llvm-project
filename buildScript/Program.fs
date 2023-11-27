@@ -15,7 +15,7 @@ module BuildEnv =
     let homeDir = Environment.environVarOrFail "HOME"
 
     let srcDir = (__SOURCE_DIRECTORY__ </> ".." </> "llvm") |> Path.getFullName
-    let buildDir = (__SOURCE_DIRECTORY__ </> ".." </> "00.B") |> Path.getFullName
+    let buildDir = (__SOURCE_DIRECTORY__ </> ".." </> "0.B") |> Path.getFullName
 
     let cmakeBin = homeDir </> ".local/bin/cmake"
     //let cmakeBin = "/usr/local/bin/cmake"
@@ -143,21 +143,23 @@ module Stage1 =
 
     let createTasks () =
         let symConfigure = "Configure" |> mkName
+        let symReconfigure = "Reconfigure" |> mkName
+        let symBuild = "Build" |> mkName
+        let symAll = "All" |> mkName
+
         Target.create symConfigure configureTask
         symConfigure |> dependsOn [ "Clean"; "CleanConfigure" ]
 
-        let symReconfigure = "Reconfigure" |> mkName
         Target.create symReconfigure ignore
         "CleanConfigure" ==> symReconfigure |> ignore
         "Clean" ?=> symReconfigure |> ignore
 
-        let symBuild = "Build" |> mkName
         Target.create symBuild buildTask
         symConfigure ==> symBuild |> ignore
 
-        let symAll = "All" |> mkName
         Target.create symAll ignore
         symAll <== [ symConfigure; symBuild ]
+        symAll ==> "All" |> ignore
 
 // Build with Stage1 clang (for instrumentation)
 module Stage2 =
@@ -223,25 +225,27 @@ module Stage2 =
 
     let createTasks () =
         let symConfigure = "Configure" |> mkName
+        let symReconfigure = "Reconfigure" |> mkName
+        let symBuild = "Build" |> mkName
+        let symTest = "Test" |> mkName
+        let symAll = "All" |> mkName
+
         Target.create symConfigure configureTask
         symConfigure |> dependsOn [ "Clean"; "CleanConfigure"; Stage1.mkName "Build" ]
 
-        let symReconfigure = "Reconfigure" |> mkName
         Target.create symReconfigure ignore
         "CleanConfigure" ==> symReconfigure |> ignore
         "Clean" ?=> symReconfigure |> ignore
 
-        let symBuild = "Build" |> mkName
         Target.create symBuild buildTask
         symConfigure ?=> symBuild |> ignore
 
-        let symTest = "Test" |> mkName
         Target.create symTest testTask
         symBuild ?=> symTest |> ignore
 
-        let symAll = "All" |> mkName
         Target.create symAll ignore
         symAll |> requires [ symConfigure; symBuild; symTest ]
+        symAll ==> "All" |> ignore
 
 // Bulid with State2 clang (for collecting instrumentation data)
 module Stage3 =
@@ -287,22 +291,23 @@ module Stage3 =
 
     let createTasks () =
         let symConfigure = "Configure" |> mkName
+        let symReconfigure = "Reconfigure" |> mkName
+        let symBuild = "Build" |> mkName
+        let symAll = "All" |> mkName
+
         Target.create symConfigure configureTask
         symConfigure |> dependsOn [ "Clean"; "CleanConfigure"; Stage2.mkName "Test" ]
 
-        let symReconfigure = "Reconfigure" |> mkName
         Target.create symReconfigure ignore
         "CleanConfigure" ==> symReconfigure |> ignore
         "Clean" ?=> symReconfigure |> ignore
 
-        let symBuild = "Build" |> mkName
         Target.create symBuild buildTask
         symConfigure ?=> symBuild |> ignore
 
-        let symAll = "All" |> mkName
         Target.create symAll ignore
         symAll |> requires [ symConfigure; symBuild ]
-
+        symAll ==> "All" |> ignore
 
 module Stage4 =
     let stageName = "Stage4"
@@ -374,32 +379,33 @@ module Stage4 =
 
     let createTasks () =
         let symMergeProfiles = "MergeProfiles" |> mkName
+        let symConfigure = "Configure" |> mkName
+        let symReconfigure = "Reconfigure" |> mkName
+        let symBuild = "Build" |> mkName
+        let symTest = "Test" |> mkName
+        let symAll = "All" |> mkName
+
         Target.create symMergeProfiles mergeProfileTask
 
         symMergeProfiles
         |> dependsOn [ "Clean"; "CleanConfigure"; Stage2.mkName "Test"; Stage3.mkName "Build" ]
 
-        let symConfigure = "Configure" |> mkName
         Target.create symConfigure configureTask
         symMergeProfiles ?=> symConfigure |> ignore
 
-        let symReconfigure = "Reconfigure" |> mkName
         Target.create symReconfigure ignore
         "CleanConfigure" ==> symReconfigure |> ignore
         "Clean" ?=> symReconfigure |> ignore
 
-        let symBuild = "Build" |> mkName
         Target.create symBuild buildTask
         symConfigure ?=> symBuild |> ignore
 
-        let symTest = "Test" |> mkName
         Target.create symTest testTask
         symBuild ?=> symTest |> ignore
 
-        let symAll = "All" |> mkName
         Target.create symAll ignore
         symAll |> requires [ symMergeProfiles; symConfigure; symBuild; symTest ]
-
+        symAll ==> "All" |> ignore
 
 module Main =
 
@@ -417,14 +423,13 @@ module Main =
         Target.create "All" ignore
 
         Target.create "Rebuild" ignore
-        "Rebuild" <== ["Clean"; "All"]
+        "Rebuild" <== [ "Clean"; "All" ]
 
         Stage1.createTasks ()
         Stage2.createTasks ()
         Stage3.createTasks ()
         Stage4.createTasks ()
 
-        "All" <== ["Stage1.All"; "Stage2.All"; "Stage3.All"; "Stage4.All"]
         Target.runOrDefault (Stage1.mkName "All")
 
         0
