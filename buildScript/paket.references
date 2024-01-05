@@ -3,3 +3,4 @@ Fake.Core.Target
 Fake.IO.FileSystem
 Fake.DotNet.MSBuild
 BlackFox.CommandLine
+FsHttp

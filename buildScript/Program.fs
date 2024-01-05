@@ -19,7 +19,7 @@ module BuildEnv =
 
     let cmakeBin = homeDir </> ".local/bin/cmake"
     //let cmakeBin = "/usr/local/bin/cmake"
-    let ccacheBin: string option = Some "/usr/local/bin/ccache" // None
+    let ccacheBin: string option = Some(homeDir </> ".cargo/bin/sccache")
     //let clangBin = "/usr/local/opt/llvm/bin/clang"
     let clangBin = "/usr/bin/clang"
     //let clangPPBin = "/usr/local/opt/llvm/bin/clang++"
@@ -43,7 +43,16 @@ module BuildEnv =
         | 0 -> r.Result |> Some
         | _ -> None
 
+    let sccacheConfig = BuildScript.Doppler.request ()
     let libTool = findTool "libtool"
+
+    let injectAzureEnv x =
+        match ccacheBin with
+        | None -> x
+        | Some _ ->
+            x
+            |> CreateProcess.setEnvironmentVariable "SCCACHE_AZURE_CONNECTION_STRING" sccacheConfig.connectionString
+            |> CreateProcess.setEnvironmentVariable "SCCACHE_AZURE_BLOB_CONTAINER" sccacheConfig.container
 
 /// Converts supplied string list into CMake's list.
 let toCMakeList (x: seq<string>) = x |> String.concat ";"
@@ -128,6 +137,7 @@ module Stage1 =
             ([| "libcxxabi"; "libcxx"; "compiler-rt" |] |> toCMakeList)
         |> CmdLine.toArray
         |> CreateProcess.fromRawCommand BuildEnv.cmakeBin
+        |> BuildEnv.injectAzureEnv
         |> CreateProcess.ensureExitCode
         |> Proc.run
         |> ignore
@@ -201,6 +211,7 @@ module Stage2 =
         |> CmdLine.appendPrefixf "-D" "LLVM_ENABLE_RUNTIMES=%s" (enabledRuntimes |> toCMakeList)
         |> CmdLine.toArray
         |> CreateProcess.fromRawCommand BuildEnv.cmakeBin
+        |> BuildEnv.injectAzureEnv
         |> CreateProcess.ensureExitCode
         |> Proc.run
         |> ignore

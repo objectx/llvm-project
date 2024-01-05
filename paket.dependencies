@@ -9,3 +9,4 @@ nuget Fake.IO.FileSystem
 nuget Fake.DotNet.MSBuild
 nuget BlackFox.CommandLine
 nuget BlackFox.Fake.BuildTask
+nuget FsHttp
