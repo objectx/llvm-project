@@ -94,6 +94,7 @@ let setCommonCMakeSettings x =
            "LLVM_INCLUDE_EXAMPLES=OFF"
            "LLVM_ENABLE_RTTI=YES"
            "LLVM_ENABLE_EH=YES"
+           "LLVM_ENABLE_LLD=YES"
            "LLVM_OPTIMIZED_TABLEGEN=ON"
            "LLVM_EXTERNALIZE_DEBUGINFO=YES" |]
 
