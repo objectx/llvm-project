@@ -94,8 +94,8 @@ let setCommonCMakeSettings x =
            "LLVM_INCLUDE_EXAMPLES=OFF"
            "LLVM_ENABLE_RTTI=YES"
            "LLVM_ENABLE_EH=YES"
-           "LLVM_OPTIMIZED_TABLEGEN=ON" |]
-    |> CmdLine.appendPrefixIfSomef "-D" "CMAKE_LIBTOOL=%s" BuildEnv.libTool
+           "LLVM_OPTIMIZED_TABLEGEN=ON"
+           "LLVM_EXTERNALIZE_DEBUGINFO=YES" |]
 
 let setBuildEnvironment srcDir buildDir x =
     x
@@ -346,6 +346,7 @@ module Stage4 =
 
         let stage1Clang = Stage1.buildDir </> "bin/clang"
         let stage1ClangPP = Stage1.buildDir </> "bin/clang++"
+        let stage1LibTool = Stage1.buildDir </> "bin/llvm-libtool-darwin"
 
         CmdLine.empty
         |> setBuildEnvironment BuildEnv.srcDir buildDir
@@ -355,12 +356,14 @@ module Stage4 =
             [| "CMAKE_BUILD_TYPE=Release"
                $"CMAKE_C_COMPILER=%s{stage1Clang}"
                $"CMAKE_CXX_COMPILER=%s{stage1ClangPP}"
+               $"CMAKE_LIBTOOL=%s{stage1LibTool}"
                "LLVM_INCLUDE_EXAMPLES=OFF"
                "LLVM_INCLUDE_TESTS=ON"
                "LLVM_INCLUDE_BENCHMARKS=ON"
                "LLVM_ENABLE_LIBCXX=YES"
                "LLVM_STATIC_LINK_CXX_STDLIB=YES"
-               "LLVM_BUILD_RUNTIME=YES" |]
+               "LLVM_BUILD_RUNTIME=YES"
+               "LLVM_ENABLE_LTO=Thin" |]
         |> CmdLine.appendPrefixf "-D" "LLVM_ENABLE_PROJECTS=%s" (enabledProjects |> toCMakeList)
         |> CmdLine.appendPrefixf "-D" "LLVM_PROFDATA_FILE=%s" profData
         |> CmdLine.appendPrefixf "-D" "LLVM_ENABLE_RUNTIMES=%s" (enabledRuntimes |> toCMakeList)
