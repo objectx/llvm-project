@@ -138,10 +138,7 @@ module Stage1 =
             "-D"
             "LLVM_ENABLE_PROJECTS=%s"
             ([| "clang"; "lld"; "clang-tools-extra" |] |> toCMakeList)
-        |> CmdLine.appendPrefixf
-            "-D"
-            "LLVM_ENABLE_RUNTIMES=%s"
-            ([| "libcxxabi"; "libcxx"; "compiler-rt" |] |> toCMakeList)
+        |> CmdLine.appendPrefixf "-D" "LLVM_ENABLE_RUNTIMES=%s" (enabledRuntimes |> toCMakeList)
         |> CmdLine.toArray
         |> CreateProcess.fromRawCommand BuildEnv.cmakeBin
         |> BuildEnv.injectCompilerLauncher
