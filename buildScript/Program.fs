@@ -34,7 +34,7 @@ module BuildEnv =
     // let clangPPBin = "/usr/local/opt/llvm/bin/clang++"
     let clangPPBin = "/usr/bin/clang++"
 
-    let installPrefix = homeDir </> ".local/llvm/18"
+    let installPrefix = homeDir </> ".local/llvm/19"
 
     let findTool (name: string) =
         let r =
