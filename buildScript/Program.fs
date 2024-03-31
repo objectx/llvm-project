@@ -196,6 +196,20 @@ module Stage2 =
         let stage1Clang = Stage1.buildDir </> "bin/clang"
         let stage1ClangPP = Stage1.buildDir </> "bin/clang++"
 
+        let compilerFlags =
+            [| "-Xclang"
+               "-mllvm"
+               "-Xclang"
+               "--vp-counters-per-site=64"
+               "-nostdinc++"
+               "-nostdlib++"
+               "-isystem"
+               Stage1.buildDir </> "include/c++/v1" |]
+            |> String.concat " "
+
+        let linkerFlags =
+            [| "-L"; Stage1.buildDir </> "lib"; "-lc++" |] |> String.concat " "
+
         CmdLine.empty
         |> setBuildEnvironment BuildEnv.srcDir buildDir
         |> setCommonCMakeSettings
@@ -206,8 +220,11 @@ module Stage2 =
             [| "CMAKE_BUILD_TYPE=Release"
                $"CMAKE_C_COMPILER=%s{stage1Clang}"
                $"CMAKE_CXX_COMPILER=%s{stage1ClangPP}"
-               "CMAKE_CXX_FLAGS_INIT=-Xclang -mllvm -Xclang -vp-counters-per-site=64"
-               "CMAKE_C_FLAGS_INIT=-Xclang -mllvm -Xclang -vp-counters-per-site=64"
+               $"CMAKE_CXX_FLAGS_INIT=%s{compilerFlags}"
+               $"CMAKE_C_FLAGS_INIT=%s{compilerFlags}"
+               $"CMAKE_EXE_LINKER_FLAGS_INIT=%s{linkerFlags}"
+               $"CMAKE_SHARED_LINKER_FLAGS_INIT=%s{linkerFlags}"
+               $$"""CMAKE_BUILD_RPATH={{Stage1.buildDir </> "lib"}}"""
                "LLVM_INCLUDE_EXAMPLES=OFF"
                "LLVM_INCLUDE_TESTS=ON"
                "LLVM_INCLUDE_BENCHMARKS=ON" |]
@@ -276,6 +293,20 @@ module Stage3 =
         let stage2Clang = Stage2.buildDir </> "bin/clang"
         let stage2ClangPP = Stage2.buildDir </> "bin/clang++"
 
+        let compilerFlags =
+            [| "-Xclang"
+               "-mllvm"
+               "-Xclang"
+               "--vp-counters-per-site=64"
+               "-nostdinc++"
+               "-nostdlib++"
+               "-isystem"
+               Stage2.buildDir </> "include/c++/v1" |]
+            |> String.concat " "
+
+        let linkerFlags =
+            [| "-L"; Stage2.buildDir </> "lib"; "-lc++" |] |> String.concat " "
+
         CmdLine.empty
         |> setBuildEnvironment BuildEnv.srcDir buildDir
         |> setCommonCMakeSettings
@@ -284,6 +315,11 @@ module Stage3 =
             [| "CMAKE_BUILD_TYPE=RelWithDebInfo"
                $"CMAKE_C_COMPILER=%s{stage2Clang}"
                $"CMAKE_CXX_COMPILER=%s{stage2ClangPP}"
+               $"CMAKE_CXX_FLAGS_INIT=%s{compilerFlags}"
+               $"CMAKE_C_FLAGS_INIT=%s{compilerFlags}"
+               $"CMAKE_EXE_LINKER_FLAGS_INIT=%s{linkerFlags}"
+               $"CMAKE_SHARED_LINKER_FLAGS_INIT=%s{linkerFlags}"
+               $$"""CMAKE_BUILD_RPATH={{Stage2.buildDir </> "lib"}}"""
                "LLVM_INCLUDE_EXAMPLES=OFF"
                "LLVM_INCLUDE_TESTS=ON"
                "LLVM_ENABLE_LIBCXX=YES"
@@ -354,6 +390,20 @@ module Stage4 =
         let stage1LibTool = Stage1.buildDir </> "bin/llvm-libtool-darwin"
         let stage1Lipo = Stage1.buildDir </> "bin/llvm-lipo"
 
+        let compilerFlags =
+            [| "-Xclang"
+               "-mllvm"
+               "-Xclang"
+               "--vp-counters-per-site=64"
+               "-nostdinc++"
+               "-nostdlib++"
+               "-isystem"
+               Stage1.buildDir </> "include/c++/v1" |]
+            |> String.concat " "
+
+        let linkerFlags =
+            [| "-L"; Stage1.buildDir </> "lib"; "-lc++" |] |> String.concat " "
+
         CmdLine.empty
         |> setBuildEnvironment BuildEnv.srcDir buildDir
         |> setCommonCMakeSettings
@@ -364,6 +414,11 @@ module Stage4 =
                $"CMAKE_CXX_COMPILER=%s{stage1ClangPP}"
                $"CMAKE_LIBTOOL=%s{stage1LibTool}"
                $"CMAKE_LIPO=%s{stage1Lipo}"
+               $"CMAKE_CXX_FLAGS_INIT=%s{compilerFlags}"
+               $"CMAKE_C_FLAGS_INIT=%s{compilerFlags}"
+               $"CMAKE_EXE_LINKER_FLAGS_INIT=%s{linkerFlags}"
+               $"CMAKE_SHARED_LINKER_FLAGS_INIT=%s{linkerFlags}"
+               $$"""CMAKE_BUILD_RPATH={{Stage1.buildDir </> "lib"}}"""
                "LLVM_INCLUDE_EXAMPLES=OFF"
                "LLVM_INCLUDE_TESTS=ON"
                "LLVM_INCLUDE_BENCHMARKS=ON"
